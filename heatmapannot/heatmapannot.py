@@ -3,13 +3,16 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+import matplotlib.text as mpltext
 import scipy as sp
 import math
 
-# x: the dataColumn for the ticks
+# gap: how far is the annotation from the previous annotation
+# thick: how thick the annotation rectangle is
 # feature: the representative values for the label 
 # direction: "row" or "col"
-def AddColorPatches(data, direction, ax, dataColumn = None, feature = None, colormap = None, palette = None):
+def AddColorPatches(direction, ax, gap, thick, 
+                    data = None, dataColumn = None, feature = None, colormap = None, palette = None):
     ticks = [l.get_text() for l in ax.get_yticklabels() if l.get_position()[0] >= -1e-3] if (direction == "row") else \
             [l.get_text() for l in ax.get_xticklabels() if l.get_position()[1] >= -1e-3] 
     palette = palette or "colorblind"
@@ -19,8 +22,9 @@ def AddColorPatches(data, direction, ax, dataColumn = None, feature = None, colo
     for t in ticks:
         tickFeature[t] = t
     if (feature is not None):
-        for row in data.iterrows():
-            tickFeature[ row[dataColumn] ] = feature
+        for i, row in data.iterrows():
+            tickFeature[ row[dataColumn] ] = row[feature]
+
     for i, t in enumerate(ticks):
         f = tickFeature[t]
         if (f not in featureRank):
@@ -38,33 +42,54 @@ def AddColorPatches(data, direction, ax, dataColumn = None, feature = None, colo
     bot, top = ax.get_ylim()
     left, right = ax.get_xlim()
     for i, t in enumerate(ticks):
-        if (direction == "row"):
-            x = left - 1 
-            y = 0
-        else: 
-            x = 0
-            y = bot + 1  # Note that the y-axis is inverted
         for i, t in enumerate(ticks):
             f = tickFeature[t]
             c = colormap[f]
             
             if (direction == "row"):
-                x = left - 1
-                y = i
+                x = left - gap - thick
+                y = i 
             else:
                 x = i
-                y = bot
-
-            ax.add_patch(patches.Rectangle([x, y], 1, 1, color=c, clip_on=False))    
+                y = bot + gap # Note that y is inversted
+            
+            width = thick if (direction == "row") else 1
+            height = thick if (direction == "col") else 1
+            ax.add_patch(patches.Rectangle([x, y], width, height, color=c))    
     
+    # Update the ticks
+    if (feature is not None):
+        if (direction == "row"):
+            locs = list(ax.get_xticks())
+            labels = ax.get_xticklabels()
+            labels.append( mpltext.Text(x = left - gap - thick / 2, y = labels[0].get_position()[1], 
+                                   text=feature, horizontalalignment="center"))
+            locs.append(left - gap - thick / 2)
+            ax.set_xticks(locs, labels)
+        else:
+            locs = list(ax.get_yticks())
+            labels = ax.get_yticklabels()
+            labels.append( mpltext.Text(x = labels[0].get_position()[0], y = bot + gap + thick / 2, 
+                                   text=feature, horizontalalignment="center"))
+            locs.append(bot + gap + thick / 2)
+            ax.set_yticks(locs, labels)            
+            
+    # Resize the plot
     if (direction == "row"):
-        ax.set_xlim(left - 1, right)
+        ax.set_xlim(left - gap - thick, right)
     else:
-        ax.set_ylim(bot + 1, top)
+        ax.set_ylim(bot + gap + thick, top)
     return colormap
 
 
-def AddHeatmapAnnot(data = None, heatmap_row = None, heatmap_col = None, 
+def AddLegend(colormap, title, idx, ax):
+    legendPatches = []
+    for f, c in colormap.items():
+        legendPatches.append(patches.Patch(color=c, label=f))
+    legendObject = ax.legend(handles = legendPatches, title = title, loc="upper left", bbox_to_anchor=(1.25+idx/3,1))
+    ax.add_artist(legendObject)
+
+def AddHeatmapAnnot(data = None, heatmap_row = None, heatmap_col = None, gap=0.1, height=0.5,
                     row_features = None, col_features = None, 
                     row_colormaps = None, col_colormaps = None, row_palettes = None,
                     col_palettes = None, ax=None):
@@ -72,14 +97,17 @@ def AddHeatmapAnnot(data = None, heatmap_row = None, heatmap_col = None,
     #fig = fig or ax.get_figure()
     #renderer = fig.canvas.get_renderer()
     
+    legendIdx = 0 
+    colormaps = []
     if (row_features or row_colormaps or row_palettes):
-        colormaps = []
         for i, t in enumerate(row_features or row_colormaps or row_palettes):      
             feature = row_features[i] if (row_features is not None) else None
             colormap = row_colormaps[i] if (row_colormaps is not None) else None
             palette = row_palettes[i] if (row_palettes is not None) else None
-            colormap = AddColorPatches(data, "row", ax, heatmap_row,
+            colormap = AddColorPatches("row", ax, gap, height, data, heatmap_row,
                                       feature=feature, colormap=colormap, palette=palette)
+            AddLegend(colormap, feature, legendIdx, ax)
+            legendIdx += 1
             colormaps.append(colormap)
             
         
@@ -88,7 +116,10 @@ def AddHeatmapAnnot(data = None, heatmap_row = None, heatmap_col = None,
             feature = col_features[i] if (col_features is not None) else None
             colormap = col_colormaps[i] if (col_colormaps is not None) else None
             palette = col_palettes[i] if (col_palettes is not None) else None
-            colormap = AddColorPatches(data, "col", ax, heatmap_row,
+            colormap = AddColorPatches("col", ax, gap, height, data, heatmap_col,
                                       feature=feature, colormap=colormap, palette=palette)
+            AddLegend(colormap, feature, legendIdx, ax)
+            legendIdx += 1
+            colormaps.append(colormap)
     
     
