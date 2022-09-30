@@ -14,7 +14,7 @@ I will try to add pvalannot to PyPi in future.
 ### Usage
 Here is a minimal example:
 
-
+Other examples can be found in dev.ipynb.
 
 ### Requirements
 + Python >= 3.6
