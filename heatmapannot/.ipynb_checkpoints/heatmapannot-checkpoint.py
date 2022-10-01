@@ -13,8 +13,8 @@ import math
 # direction: "row" or "col"
 def AddColorPatches(direction, ax, gap, thick, 
                     data = None, dataColumn = None, feature = None, colormap = None, palette = None):
-    ticks = [l.get_text() for l in ax.get_yticklabels() if l.get_position()[0] >= -1e-3] if (direction == "row") else \
-            [l.get_text() for l in ax.get_xticklabels() if l.get_position()[1] >= -1e-3] 
+    ticks = [l.get_text() for l in ax.get_yticklabels() if l.get_position()[1] >= -1e-3] if (direction == "row") else \
+            [l.get_text() for l in ax.get_xticklabels() if l.get_position()[0] >= -1e-3] 
     palette = palette or "colorblind"
     
     tickFeature = {}
@@ -22,8 +22,9 @@ def AddColorPatches(direction, ax, gap, thick,
     for t in ticks:
         tickFeature[t] = t
     if (feature is not None):
+        tickFeature = {}
         for i, row in data.iterrows():
-            tickFeature[ row[dataColumn] ] = row[feature]
+            tickFeature[ str(row[dataColumn]) ] = row[feature]
 
     for i, t in enumerate(ticks):
         f = tickFeature[t]
@@ -37,25 +38,24 @@ def AddColorPatches(direction, ax, gap, thick,
                                            key=lambda x:featureRank[x])], 
                         colors):
             colormap[f] = c
-    
+
     # Draw the colors
     bot, top = ax.get_ylim()
     left, right = ax.get_xlim()
     for i, t in enumerate(ticks):
-        for i, t in enumerate(ticks):
-            f = tickFeature[t]
-            c = colormap[f]
-            
-            if (direction == "row"):
-                x = left - gap - thick
-                y = i 
-            else:
-                x = i
-                y = bot + gap # Note that y is inversted
-            
-            width = thick if (direction == "row") else 1
-            height = thick if (direction == "col") else 1
-            ax.add_patch(patches.Rectangle([x, y], width, height, color=c))    
+        f = tickFeature[t]
+        c = colormap[f]
+
+        if (direction == "row"):
+            x = left - gap - thick
+            y = i 
+        else:
+            x = i
+            y = bot + gap # Note that y is inversted
+
+        width = thick if (direction == "row") else 1
+        height = thick if (direction == "col") else 1
+        ax.add_patch(patches.Rectangle([x, y], width, height, color=c))    
     
     # Update the ticks
     if (feature is not None):
