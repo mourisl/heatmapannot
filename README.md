@@ -42,7 +42,7 @@ heatmapannot.AddHeatmapAnnot(data=df, heatmap_row="month", heatmap_col="year",
 plt.tight_layout()
 ```
 
-AddHeatmapAnnot function takes the "data" as the dataframe for the pivot dataframe for heatmap. It assumes the x- and y-tick labels are the values in the "heatmap_row" and "heatmap_col" column. The features parameters specify map the tick labels to other features (e.g. the season of a month) through hthe input dataframe. row_features and col_features are lists, so you can add multiple annotations. The color for the annotation box is controled by palettes and user-defined colormaps (from feature to color). It is assumed that the color list is of the same length as the feature list. If you need to mix palettes and colormaps, you can put "None" as a place holder. 
+AddHeatmapAnnot function takes the "data" as the dataframe for the pivot dataframe for heatmap. It assumes the x- and y-tick labels are the values in the "heatmap_row" and "heatmap_col" column. The features parameters specify map the tick labels to other features (e.g. the season of a month) through hthe input dataframe. row_features and col_features are lists, so you can add multiple annotations. The first feature in the list will be drawn first and is closer to the heatmap. The color for the annotation box is controled by palettes and user-defined colormaps (from feature to color). It is assumed that the color list is of the same length as the feature list. If you need to mix palettes and colormaps, you can put "None" as a place holder.  
 
 Examples can be found in example.ipynb.
 
