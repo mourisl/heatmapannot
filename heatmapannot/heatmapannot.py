@@ -82,7 +82,7 @@ def AddColorPatches(direction, ax, gap, thick,
     return colormap
 
 
-def AddLegend(colormap, title, idx, ax):
+def AddLegend(colormap, title, idx, anchor, ax):
     legendPatches = []
     for f, c in colormap.items():
         legendPatches.append(patches.Patch(color=c, label=f))
@@ -90,24 +90,20 @@ def AddLegend(colormap, title, idx, ax):
     fig = ax.get_figure()
     #renderer = fig.canvas.get_renderer()
     
-    figRight = fig.bbox.transformed(ax.transData.inverted()).get_points()[1][0]
+    figRight = fig.bbox.transformed(fig.transFigure.inverted()).get_points()[1][0]
     #xAnchor =  ax.bbox.transformed(ax.transData.inverted()).get_points()[1][0]
     xAnchor = figRight
-    for a in ax.artists:
+    for a in fig.artists:
         right = a.get_tightbbox(renderer = \
-                                fig.canvas.get_renderer()).transformed(ax.transData.inverted()).get_points()[1][0]
+                                fig.canvas.get_renderer()).transformed(fig.transFigure.inverted()).get_points()[1][0]
         if (right > xAnchor):
             xAnchor = right
     
-    left, right = ax.get_xlim()
-    #low, high = ax.get_ylim()
+    legendObject = fig.legend(handles = legendPatches, title = title, loc="upper left", 
+                             bbox_to_anchor=(xAnchor, 1))
     
-    figwidth = fig.get_figwidth()
-    figheight = fig.get_figheight()
-    print(xAnchor, ax.get_xlim()[1], figwidth, figheight)
-    legendObject = ax.legend(handles = legendPatches, title = title, loc="upper left", 
-                             bbox_to_anchor=(1 + (xAnchor - right) / right, 1))
-    ax.add_artist(legendObject)
+    fig.add_artist(legendObject)
+    return anchor
 
 def AddHeatmapAnnot(data = None, heatmap_row = None, heatmap_col = None, gap=0.1, height=0.5,
                     row_features = None, col_features = None, 
@@ -119,6 +115,7 @@ def AddHeatmapAnnot(data = None, heatmap_row = None, heatmap_col = None, gap=0.1
     
     legendIdx = 0 
     colormaps = []
+    firstLegendAnchor = 0
     if (row_features or row_colormaps or row_palettes):
         for i, t in enumerate(row_features or row_colormaps or row_palettes):      
             feature = row_features[i] if (row_features is not None) else None
@@ -126,7 +123,7 @@ def AddHeatmapAnnot(data = None, heatmap_row = None, heatmap_col = None, gap=0.1
             palette = row_palettes[i] if (row_palettes is not None) else None
             colormap = AddColorPatches("row", ax, gap, height, data, heatmap_row,
                                       feature=feature, colormap=colormap, palette=palette)
-            AddLegend(colormap, feature, legendIdx, ax)
+            AddLegend(colormap, feature, legendIdx, firstLegendAnchor, ax)
             legendIdx += 1
             colormaps.append(colormap)
             
@@ -138,7 +135,7 @@ def AddHeatmapAnnot(data = None, heatmap_row = None, heatmap_col = None, gap=0.1
             palette = col_palettes[i] if (col_palettes is not None) else None
             colormap = AddColorPatches("col", ax, gap, height, data, heatmap_col,
                                       feature=feature, colormap=colormap, palette=palette)
-            AddLegend(colormap, feature, legendIdx, ax)
+            AddLegend(colormap, feature, legendIdx, firstLegendAnchor, ax)
             legendIdx += 1
             colormaps.append(colormap)
             
