@@ -99,8 +99,8 @@ def AddLegend(colormap, title, idx, ax):
         if (right > xAnchor):
             xAnchor = right
     
-    legendObject = fig.legend(handles = legendPatches, title = title, loc="upper left", 
-                             bbox_to_anchor=(xAnchor, 1))
+    legendObject = fig.legend(handles = legendPatches, title = title, loc="center left", 
+                             bbox_to_anchor=(xAnchor, 0.5))
     
     fig.add_artist(legendObject)
 
