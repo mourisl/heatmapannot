@@ -14,6 +14,25 @@ I will try to add pvalannot to PyPi in future.
 ### Usage
 Here is a minimal example:
 
+```
+import seaborn as sns
+
+#load "flights" dataset
+df = sns.load_dataset("flights")
+monthToSeason = {"Jan":"Winter", "Feb":"Winter", "Mar":"Spring", "Apr":"Spring", "May":"Spring",
+                "Jun":"Summer", "Jul":"Summer", "Aug":"Summer", "Sep":"Fall", "Oct":"Fall", "Nov":"Fall",
+                "Dec":"Winter"}
+df["season"] = df["month"].map(monthToSeason)
+df["leap"] = df["year"].map(lambda x: x%4==0)
+heatmapdf = df.pivot("month", "year", "passengers")
+
+sns.heatmap(heatmapdf)
+heatmapannot.AddHeatmapAnnot(data=df, heatmap_row="month", heatmap_col="year",
+                            row_features = ["season"], col_features = ["leap"],
+                            row_palettes = ["bright"], col_colormaps = [{True:"r", False:"b"}])
+plt.tight_layout()
+```
+
 Other examples can be found in dev.ipynb.
 
 ### Requirements
