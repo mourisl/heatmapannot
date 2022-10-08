@@ -9,7 +9,7 @@ A Python package to add heatmap annotations on plots generated with Seaborn.
 1. Clone the [GitHub repo](https://github.com/mourisl/heatmapannot), e.g. with `git clone https://github.com/mourisl/heatmapannot`.
 2. Copy "heatmapannot" folder to your project folder.
 
-I will try to add pvalannot to PyPi in future.
+I will try to add heatmapannot to PyPi in future.
 
 ### Usage
 Here is an example:
