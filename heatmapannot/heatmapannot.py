@@ -1,10 +1,8 @@
 import seaborn as sns
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import matplotlib.text as mpltext
-import scipy as sp
 import math
 
 # gap: how far is the annotation from the previous annotation
