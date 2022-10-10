@@ -10,7 +10,7 @@ import math
 # feature: the representative values for the label 
 # direction: "row" or "col"
 # anchor: -1: add the annotation to the negative side of the axis; 1 to the positive side
-def AddColorPatches(direction, ax, gap, thick, anchor, ticks, 
+def AddColorPatches(direction, ax, gap, thick, anchor, ticks, shift = 0,
                     data = None, dataColumn = None, feature = None, colormap = None, palette = None):
     #ticks = [l.get_text() for l in ax.get_yticklabels() if l.get_position()[1] >= -1e-3] if (direction == "row") else \
     #        [l.get_text() for l in ax.get_xticklabels() if l.get_position()[0] >= -1e-3] 
@@ -60,9 +60,9 @@ def AddColorPatches(direction, ax, gap, thick, anchor, ticks,
                 x = left - gap - thick
             else: 
                 x = right + gap 
-            y = i 
+            y = i + shift
         elif (direction == "col"):
-            x = i           
+            x = i + shift          
             if (anchor == -1):
                 y = bot - gap - thick
             else:
@@ -170,16 +170,21 @@ def AddHeatmapAnnot(data = None, heatmap_row = None, heatmap_col = None, gap=0.1
                     row_colormaps = None, col_colormaps = None, 
                     row_palettes = None, col_palettes = None, 
                     row_anchors = None, col_anchors = None,
+                    row_align_shift = 0, col_align_shift = 0,
                     hide_legends = None, ax=None):
     ax = ax or plt.gca()
-    #fig = ax.get_figure()
+    fig = ax.get_figure()
     #renderer = fig.canvas.get_renderer()
     left, right = ax.get_xlim()
     bot, top = ax.get_ylim()
     
+    # This command is very IMPORTANT to put the ticks on the plot,
+    # so heatmapannot can track the labels
+    fig.canvas.draw()
+    
     xticks = [l.get_text() for l in ax.get_xticklabels()]
     yticks = [l.get_text() for l in ax.get_yticklabels()]   
-    
+
     legendIdx = 0 
     colormaps = []
     if (row_features or row_colormaps or row_palettes):
@@ -188,7 +193,7 @@ def AddHeatmapAnnot(data = None, heatmap_row = None, heatmap_col = None, gap=0.1
             colormap = row_colormaps[i] if (row_colormaps is not None) else None
             palette = row_palettes[i] if (row_palettes is not None) else None
             anchor = row_anchors[i] if (row_anchors is not None) else -1
-            colormap = AddColorPatches("row", ax, gap, height, anchor, yticks, data, heatmap_row, 
+            colormap = AddColorPatches("row", ax, gap, height, anchor, yticks, row_align_shift, data, heatmap_row, 
                                       feature=feature, colormap=colormap, palette=palette)
             if (not hide_legends or legendIdx not in hide_legends):
                 AddLegend(colormap, feature, legendIdx, ax)
@@ -203,7 +208,7 @@ def AddHeatmapAnnot(data = None, heatmap_row = None, heatmap_col = None, gap=0.1
             colormap = col_colormaps[i] if (col_colormaps is not None) else None
             palette = col_palettes[i] if (col_palettes is not None) else None
             anchor = col_anchors[i] if (col_anchors is not None) else 1
-            colormap = AddColorPatches("col", ax, gap, height, anchor, xticks, data, heatmap_col,
+            colormap = AddColorPatches("col", ax, gap, height, anchor, xticks, col_align_shift, data, heatmap_col,
                                       feature=feature, colormap=colormap, palette=palette)
             if (not hide_legends or legendIdx not in hide_legends):
                 AddLegend(colormap, feature, legendIdx, ax)
