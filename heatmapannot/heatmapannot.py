@@ -178,13 +178,23 @@ def AddHeatmapAnnot(data = None, heatmap_row = None, heatmap_col = None, gap=0.1
     left, right = ax.get_xlim()
     bot, top = ax.get_ylim()
     
-    # This command is very IMPORTANT to put the ticks on the plot,
-    # so heatmapannot can track the labels
-    fig.canvas.draw()
-    
     xticks = [l.get_text() for l in ax.get_xticklabels()]
     yticks = [l.get_text() for l in ax.get_yticklabels()]   
-
+    
+    needCanvasDraw = True
+    
+    for t in xticks + yticks:
+        if (len(t) > 0):
+            needCanvasDraw = False
+            break
+        
+    # This command is very IMPORTANT to put the ticks on the plot,
+    # so heatmapannot can track the labels
+    if (needCanvasDraw):
+        fig.canvas.draw()
+        xticks = [l.get_text() for l in ax.get_xticklabels()]
+        yticks = [l.get_text() for l in ax.get_yticklabels()]  
+        
     legendIdx = 0 
     colormaps = []
     if (row_features or row_colormaps or row_palettes):
